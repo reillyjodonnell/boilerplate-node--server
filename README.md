@@ -176,3 +176,18 @@ I completely stand on the shoulders of giants
 - [Express](https://expressjs.com)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- ACKNOWLEDGMENTS -->
+
+## FAQS
+
+Random shit I've thought of that I want to remind future me
+
+- I updated the prisma schema why isn't it updating?
+  -- Be sure to run
+
+```sh
+  yarn prisma-update
+```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
