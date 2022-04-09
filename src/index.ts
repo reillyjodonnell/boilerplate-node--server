@@ -1,14 +1,49 @@
 import 'dotenv/config';
 import express from 'express';
 
-const app = express();
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
-const port = process?.env?.['PORT'] ?? 3000;
+async function main() {
+  const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Hello from TS & Express');
-});
+  const port = process?.env?.['PORT'] ?? 3000;
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
+  app.get('/', (req, res) => {
+    res.send('Hello from TS & Express');
+  });
+
+  app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+  });
+  await prisma.user.create({
+    data: {
+      name: 'Alice',
+      email: 'test@prisma.io',
+
+      posts: {
+        create: { title: 'Hello World' },
+      },
+      profile: {
+        create: { bio: 'I like turtles' },
+      },
+    },
+  });
+  console.log('BOOYAH');
+
+  const allUsers = await prisma.user.findMany({
+    include: {
+      posts: true,
+      profile: true,
+    },
+  });
+  console.dir(allUsers, { depth: null });
+}
+
+main()
+  .catch((e) => {
+    throw e;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
