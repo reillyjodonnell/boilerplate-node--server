@@ -4,8 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "watch": "nodemon dist/index.js",
-    "dev": "tsc -w"
+    "dev": "nodemon dist/index.js",
+    "watch": "tsc -w",
+    "prisma-update": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^3.12.0",

@@ -27,25 +27,26 @@ function main() {
         app.listen(port, () => {
             console.log(`Listening on port ${port}`);
         });
-        yield prisma.user.create({
-            data: {
-                name: 'Alice',
-                email: 'test@prisma.io',
-                posts: {
-                    create: { title: 'Hello World' },
-                },
-                profile: {
-                    create: { bio: 'I like turtles' },
-                },
-            },
-        });
-        console.log('BOOYAH');
+        // await prisma.user.create({
+        //   data: {
+        //     name: 'Alice',
+        //     email: 'test@prisma.io',
+        //     posts: {
+        //       create: { title: 'Hello World' },
+        //     },
+        //     profile: {
+        //       create: { bio: 'I like turtles' },
+        //     },
+        //   },
+        // });
+        // console.log('BOOYAH');
         const allUsers = yield prisma.user.findMany({
             include: {
-                posts: true,
-                profile: true,
+                Post: true,
+                Profile: true,
             },
         });
+        console.log('Found em');
         console.dir(allUsers, { depth: null });
     });
 }
@@ -54,6 +55,7 @@ main()
     throw e;
 })
     .finally(() => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('bye');
     yield prisma.$disconnect();
 }));
 //# sourceMappingURL=index.js.map
