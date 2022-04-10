@@ -55,33 +55,25 @@ export default async function server() {
     res.sendFile(path.join(__dirname, '..', 'public/login.html/'));
   });
 
-  app.post('/login', (req, res, next) => {
+  app.post('/login', async (req, res) => {
     const email: string = req.body.email;
-    let errorMessage: string = '';
-    console.log(email);
-    async function retrieveUserData() {
-      const user = await prisma.user
-        .findUnique({
-          where: {
-            email: email,
-          },
-          rejectOnNotFound: true,
-        })
-        .catch((err) => (errorMessage = err));
-      console.log(errorMessage);
-      try {
-        console.log(user, { depth: null });
-        const name: String = user?.name!;
-        res.send(`Hello ${name}`);
-      } catch (err) {
-        return err;
-      }
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: email,
+        },
+        rejectOnNotFound: true,
+      });
+      console.log(user);
+      res.json(user);
+    } catch (error) {
+      res.json({ error: `User not found` });
     }
-    retrieveUserData();
   });
 
   app.listen(port, () => {
-    console.log(`Server started at http://localhost:${port}`);
+    console.log(`🚀 Server started at http://localhost:${port}`);
   });
 
   // await prisma.user.create({
