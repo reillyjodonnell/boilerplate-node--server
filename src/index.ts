@@ -2,16 +2,18 @@ import 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
 import { PrismaClient } from '@prisma/client';
+import path from 'path';
 const prisma = new PrismaClient();
 
 export default async function server() {
   const app = express();
+  const isProd: boolean =
+    process?.env?.['NODE_ENV'] === 'production' ? true : false;
   const dbUrl: string | undefined = process?.env?.['DATABASE_URL'];
   const secret: string | undefined = process?.env?.['TODAYS_SECRET'];
   const port: number | undefined = process?.env?.['PORT']
     ? parseInt(process?.env?.['PORT'])
     : 3000;
-  const tenMinutes = 1000 * 60 * 10; // 10 min
 
   //Add this code
   if (!dbUrl) {
@@ -26,35 +28,76 @@ export default async function server() {
   app.set('trust proxy', 1); // trust first proxy
   app.use(
     session({
-      secret: secret!,
+      //store: , currently the store is MemoryStore (dont use in prod)
+      secret: secret,
       resave: false,
       saveUninitialized: true,
-      cookie: { secure: true, maxAge: tenMinutes, httpOnly: true },
+      cookie: {
+        secure: isProd,
+        httpOnly: true,
+        maxAge: 1000 * 60 * 10, // 10 mins
+      },
     })
   );
+  app.use(express.static(path.join(__dirname, '..', 'public')));
+
+  app.use(express.json());
+
+  // We have to use this is form is submitted with HTML only
+  // for parsing application/x-www-form-urlencoded
+  app.use(express.urlencoded({ extended: false }));
 
   app.get('/', (req, res) => {
-    res.send('Hello from TS & Express');
+    res.sendFile(path.join(__dirname, '..', 'public/index.html/'));
+  });
+
+  app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public/login.html/'));
+  });
+
+  app.post('/login', (req, res, next) => {
+    const email: string = req.body.email;
+    let errorMessage: string = '';
+    console.log(email);
+    async function retrieveUserData() {
+      const user = await prisma.user
+        .findUnique({
+          where: {
+            email: email,
+          },
+          rejectOnNotFound: true,
+        })
+        .catch((err) => (errorMessage = err));
+      console.log(errorMessage);
+      try {
+        console.log(user, { depth: null });
+        const name: String = user?.name!;
+        res.send(`Hello ${name}`);
+      } catch (err) {
+        return err;
+      }
+    }
+    retrieveUserData();
   });
 
   app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+    console.log(`Server started at http://localhost:${port}`);
   });
 
   // await prisma.user.create({
   //   data: {
   //     name: 'Alice',
   //     email: 'test@prisma.io',
-
-  //     posts: {
-  //       create: { title: 'Hello World' },
-  //     },
-  //     profile: {
-  //       create: { bio: 'I like turtles' },
-  //     },
+  //     password: 'password',
   //   },
   // });
   // console.log('BOOYAH');
+
+  // await prisma.user.delete({
+  //   where: {
+  //     email: 'alice@prisma.io',
+  //   },
+  // });
 
   // const allUsers = await prisma.user.findMany({
   //   include: {
