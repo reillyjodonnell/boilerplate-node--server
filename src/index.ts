@@ -1,12 +1,37 @@
 import 'dotenv/config';
 import express from 'express';
+import session from 'express-session';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-async function main() {
+export default async function server() {
   const app = express();
+  const dbUrl: string | undefined = process?.env?.['DATABASE_URL'];
+  const secret: string | undefined = process?.env?.['TODAYS_SECRET'];
+  const port: number | undefined = process?.env?.['PORT']
+    ? parseInt(process?.env?.['PORT'])
+    : 3000;
+  const tenMinutes = 1000 * 60 * 10; // 10 min
 
-  const port = process?.env?.['PORT'] ?? 3000;
+  //Add this code
+  if (!dbUrl) {
+    console.warn('process.env.DATABASE_URL must be defined!');
+    process.exit(1);
+  }
+  if (!secret) {
+    console.warn('process.env.TODAYS_SECRET must be defined!');
+    process.exit(1);
+  }
+
+  app.set('trust proxy', 1); // trust first proxy
+  app.use(
+    session({
+      secret: secret!,
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: true, maxAge: tenMinutes, httpOnly: true },
+    })
+  );
 
   app.get('/', (req, res) => {
     res.send('Hello from TS & Express');
@@ -31,21 +56,19 @@ async function main() {
   // });
   // console.log('BOOYAH');
 
-  const allUsers = await prisma.user.findMany({
-    include: {
-      Post: true,
-      Profile: true,
-    },
-  });
-  console.log('Found em');
-  console.dir(allUsers, { depth: null });
+  // const allUsers = await prisma.user.findMany({
+  //   include: {
+  //     Post: true,
+  //     Profile: true,
+  //   },
+  // });
+  // console.dir(allUsers, { depth: null });
 }
 
-main()
+server()
   .catch((e) => {
     throw e;
   })
   .finally(async () => {
-    console.log('bye');
     await prisma.$disconnect();
   });
