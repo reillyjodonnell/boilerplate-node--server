@@ -3,6 +3,7 @@ import express from 'express';
 import session from 'express-session';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
+import { errorsConstants } from '~/constants/errorsConstants';
 const prisma = new PrismaClient();
 
 export default async function server() {
@@ -39,24 +40,24 @@ export default async function server() {
       },
     })
   );
-  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   app.use(express.json());
 
-  // We have to use this is form is submitted with HTML only
+  // We have to use this if form is submitted with HTML only
   // for parsing application/x-www-form-urlencoded
-  app.use(express.urlencoded({ extended: false }));
+  app.use(express.urlencoded({ extended: true }));
 
   app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public/index.html/'));
+    res.sendFile(path.join(__dirname, '..', 'public/index.html'));
   });
 
   app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public/login.html/'));
+    console.log('At login');
+    res.sendFile(path.join(__dirname, '..', 'public/login.html'));
   });
 
   app.post('/login', async (req, res) => {
-    const email: string = req.body.email;
+    const email = req.body.email;
 
     try {
       const user = await prisma.user.findUnique({
@@ -65,15 +66,18 @@ export default async function server() {
         },
         rejectOnNotFound: true,
       });
-      console.log(user);
       res.json(user);
-    } catch (error) {
-      res.json({ error: `User not found` });
+    } catch (error: any) {
+      res
+        .status(errorsConstants.NOT_FOUND_STATUS_CODE)
+        .json({ error: errorsConstants.INVALID_USERNAME_OR_PASSWORD });
     }
   });
 
+  app.use(express.static(path.join(__dirname, '..', 'public')));
+
   app.listen(port, () => {
-    console.log(`🚀 Server started at http://localhost:${port}`);
+    console.log(`🚀 Server started at http://localhost:${port}!`);
   });
 
   // await prisma.user.create({

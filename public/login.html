@@ -4,26 +4,50 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" type="text/css" href="main.css" />
+    <title>Login Page</title>
+    <link rel="stylesheet" rel="preload" type="text/css" href="main.css" />
+    <script defer src="index.js"></script>
   </head>
   <body>
     <span class="title">Login</span>
+    <span id="error"></span>
     <div class="padding">
-      <form method="post">
-        <label
-          >Email:
-          <input type="text" name="email" required />
+      <form method="post" id="login-form" class="form-container">
+        <label class="login-label input-container"
+          ><span class="login-label-text"> Email </span>
+          <input
+            class="login-input"
+            type="text"
+            name="email"
+            autocomplete="email"
+            required
+          />
         </label>
-        <label
-          >Password:
-          <input type="text" name="password" required />
+        <label class="login-label input-container"
+          ><span class="login-label-text"> Password </span>
+          <input
+            class="login-input"
+            autocomplete="current-password"
+            type="password"
+            name="password"
+            required
+          />
         </label>
-        <input type="submit" value="Submit! 🔥" />
+
+        <input
+          class="login-submit"
+          id="submit"
+          type="submit"
+          value="Submit! 🔥"
+        />
       </form>
     </div>
 
-    <button onclick="location.href='http://localhost:3000/' " type="button">
+    <button
+      onclick="location.href='http://localhost:3000/'"
+      class="go-back"
+      type="button"
+    >
       Go back!
     </button>
   </body>
