@@ -3,7 +3,10 @@ import express from 'express';
 import session from 'express-session';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
-import { errorsConstants } from '~/constants/errorsConstants';
+import { errorsConstants } from '~/server/constants/errorsConstants';
+import * as ReactDOMServer from 'react-dom/server';
+import { App } from '~/app/app';
+import React from 'react';
 const prisma = new PrismaClient();
 
 export default async function server() {
@@ -48,8 +51,24 @@ export default async function server() {
   app.use(express.urlencoded({ extended: true }));
 
   app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public/index.html'));
+    // res.sendFile(path.join(__dirname, '..', 'public/index.html'));
+    const app = ReactDOMServer.renderToString(<App />);
+
+    const html = `
+        <html lang="en">
+        <head>
+            <script src="app.js" defer></script>
+        </head>
+        <body>
+            <div id="root">${app}</div>
+            <p> Application is rendered above with CSR 🔥🔥 🔥</p>
+        </body>
+        </html>
+    `;
+    res.send(html);
   });
+
+  app.use(express.static('./dist'));
 
   app.get('/login', (req, res) => {
     console.log('At login');
@@ -74,7 +93,7 @@ export default async function server() {
     }
   });
 
-  app.use(express.static(path.join(__dirname, '..', 'public')));
+  // app.use(express.static(path.join(__dirname, '..', 'public')));
 
   app.listen(port, () => {
     console.log(`🚀 Server started at http://localhost:${port}!`);
